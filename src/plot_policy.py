@@ -1,15 +1,15 @@
-"""Visualize a learned Taxi policy as arrow grids + value heatmaps.
+"""Visualiseer een geleerde Taxi-poli als pijlenrasters en waarde-heatmaps.
 
-The state space is 500 = 25 taxi-positions x 5 passenger-locations x 4 destinations,
-so we can't show everything in one picture. Instead we render a 2x4 panel:
-two passenger scenarios x four destination corners.
+De toestandsruimte heeft 500 toestanden (25 taxiposities × 5 passagierslocaties × 4 bestemmingen).
+Alles tegelijk tonen is te druk, dus we maken een 2×4 paneel:
+  - 2 rijen: passagier wacht (rij 0) vs. passagier al in taxi (rij 1).
+  - 4 kolommen: de vier mogelijke bestemmingen (R, G, Y, B).
 
-Top row    : passenger waiting at R, taxi must pick them up.
-Bottom row : passenger already in the taxi, taxi must drop them off.
-Each cell  : 5x5 grid showing V(s) heatmap and the greedy action arrow.
+Elke cel toont een 5×5 grid met:
+  - Kleurkaart (heatmap) van de waarde V(s) = max_a Q(s, a).
+  - Pijlen voor bewegings-actions en letters P/D voor pickup/dropoff.
+  - Oranje cirkel = passagierslocatie, rood vierkant = bestemming.
 """
-from __future__ import annotations
-
 import argparse
 
 import matplotlib.pyplot as plt
@@ -17,33 +17,47 @@ import numpy as np
 
 from .env import GRID_SHAPE, LOC_NAMES, LOCATIONS
 
-# (drow, dcol) for each movement action; pickup/dropoff drawn as a marker.
+# Verschuiving in (rij, kolom) per bewegingsactie; pickup/dropoff krijgen een letter.
 _ARROW = {
-    0: (1, 0),    # south
-    1: (-1, 0),   # north
-    2: (0, 1),    # east
-    3: (0, -1),   # west
+    0: (1, 0),    # naar beneden (south)
+    1: (-1, 0),   # naar boven (north)
+    2: (0, 1),    # naar rechts (east)
+    3: (0, -1),   # naar links (west)
 }
 _PICKUP, _DROPOFF = 4, 5
 
 
 def _encode(row: int, col: int, pass_loc: int, dest: int) -> int:
+    """Codeer (row, col, passagier, destination) terug naar één state-getal."""
     return ((row * 5 + col) * 5 + pass_loc) * 4 + dest
 
 
 def _draw_cell(ax, Q: np.ndarray, pass_loc: int, dest: int, title: str) -> None:
+    """Teken één cel van het paneel: heatmap + actions voor een vaste passagier/destination-combinatie.
+
+    Args:
+        ax:       Matplotlib-as om op te tekenen.
+        Q:        Q-table met vorm (500, 6).
+        pass_loc: Passagierslocatie (0–3 = wachtend, 4 = in taxi).
+        dest:     Destination-index (0–3).
+        title:    Titel boven de cel.
+    """
     n_rows, n_cols = GRID_SHAPE
     V = np.zeros((n_rows, n_cols))
     greedy = np.zeros((n_rows, n_cols), dtype=int)
+
+    # Bereken voor elke taxipositie de waarde V(s) en de greedy action.
     for r in range(n_rows):
         for c in range(n_cols):
             s = _encode(r, c, pass_loc, dest)
             V[r, c] = Q[s].max()
             greedy[r, c] = int(Q[s].argmax())
 
+    # Teken de heatmap (hogere waarde = lichter/geler).
     im = ax.imshow(V, cmap="viridis", origin="upper")
     plt.colorbar(im, ax=ax, fraction=0.045, pad=0.04)
 
+    # Teken pijlen of letters bovenop de heatmap.
     for r in range(n_rows):
         for c in range(n_cols):
             a = greedy[r, c]
@@ -59,10 +73,13 @@ def _draw_cell(ax, Q: np.ndarray, pass_loc: int, dest: int, title: str) -> None:
                 ax.text(c, r, "D", color="white", ha="center", va="center",
                         fontsize=10, fontweight="bold")
 
+    # Teken een oranje cirkel op de passagierslocatie (alleen als die buiten de taxi is).
     if pass_loc < 4:
         pr, pc = LOCATIONS[pass_loc]
         ax.add_patch(plt.Circle((pc, pr), 0.35, fill=False,
                                 edgecolor="orange", linewidth=2))
+
+    # Teken een rood vierkant op de bestemming.
     dr, dc = LOCATIONS[dest]
     ax.add_patch(plt.Rectangle((dc - 0.4, dr - 0.4), 0.8, 0.8, fill=False,
                                edgecolor="red", linewidth=2))
@@ -73,26 +90,29 @@ def _draw_cell(ax, Q: np.ndarray, pass_loc: int, dest: int, title: str) -> None:
 
 
 def main() -> None:
+    """Hoofdfunctie: laad Q-tabel, maak het 2×4 paneel en sla de afbeelding op."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--weights", required=True)
-    parser.add_argument("--output", required=True)
-    parser.add_argument("--title", default="Learned Taxi policy")
+    parser.add_argument("--weights", required=True,
+                        help="Pad naar de opgeslagen Q-table (.npy).")
+    parser.add_argument("--output", required=True,
+                        help="Pad waar de afbeelding opgeslagen wordt.")
+    parser.add_argument("--title", default="Geleerd Taxi-beleid")
     args = parser.parse_args()
 
     Q = np.load(args.weights)
 
     fig, axes = plt.subplots(2, 4, figsize=(16, 7))
     for dest in range(4):
-        # Row 0: passenger waiting at R (pass_loc=0). Row 1: passenger in taxi (pass_loc=4).
+        # Rij 0: passagier wacht bij R (pass_loc=0). Rij 1: passagier al in de taxi (pass_loc=4).
         _draw_cell(axes[0, dest], Q, pass_loc=0, dest=dest,
-                   title=f"Pickup at R, drop at {LOC_NAMES[dest]}")
+                   title=f"Ophalen bij R, afzetten bij {LOC_NAMES[dest]}")
         _draw_cell(axes[1, dest], Q, pass_loc=4, dest=dest,
-                   title=f"In taxi, drop at {LOC_NAMES[dest]}")
+                   title=f"In taxi, afzetten bij {LOC_NAMES[dest]}")
 
-    fig.suptitle(args.title + "  (orange=passenger, red=destination)", fontsize=12)
+    fig.suptitle(args.title + "  (oranje=passagier, rood=bestemming)", fontsize=12)
     plt.tight_layout()
     plt.savefig(args.output, dpi=120)
-    print(f"Saved policy plot to {args.output}")
+    print(f"Beleidsplot opgeslagen als {args.output}")
 
 
 if __name__ == "__main__":
