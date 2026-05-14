@@ -1,6 +1,6 @@
 """Visualiseer een geleerde Taxi-poli als pijlenrasters en waarde-heatmaps.
 
-De toestandsruimte heeft 500 toestanden (25 taxiposities × 5 passagierslocaties × 4 bestemmingen).
+De toestandsruimte heeft 500 states (25 taxiposities × 5 passagierslocaties × 4 bestemmingen).
 Alles tegelijk tonen is te druk, dus we maken een 2×4 paneel:
   - 2 rijen: passagier wacht (rij 0) vs. passagier al in taxi (rij 1).
   - 4 kolommen: de vier mogelijke bestemmingen (R, G, Y, B).
