@@ -1,6 +1,6 @@
-# Taxi-v3 RL (Q-learning en SARSA)
+# Taxi-v4 RL (Q-learning en SARSA)
 
-RL-project op Gymnasium Taxi-v3. We vergelijken:
+RL-project op Gymnasium Taxi-v4. We vergelijken:
 
 - Q-learning (tabulair)
 - SARSA (tabulair)
@@ -19,7 +19,7 @@ pip install -r requirements.txt
 ```text
 .
 ├── src/
-│   ├── env.py                # Taxi-v3 wrapper en state-decoder
+│   ├── env.py                # Taxi-v4 wrapper en state-decoder
 │   ├── agents/
 │   │   ├── base.py
 │   │   ├── random_agent.py

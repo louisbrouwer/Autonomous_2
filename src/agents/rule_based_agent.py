@@ -1,4 +1,4 @@
-"""Regelgebaseerde agent voor Taxi-v3 (houdt geen rekening met muren).
+"""Regelgebaseerde agent voor Taxi-v4 (houdt geen rekening met muren).
 
 Logica:
     1. Passagier zit NIET in de taxi:

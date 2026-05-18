@@ -62,7 +62,7 @@ def main() -> None:
 
     plt.xlabel("Episode")
     plt.ylabel(f"Reward (voortschrijdend gemiddelde, window={args.window})")
-    plt.title("Trainings-reward curves — Taxi-v3")
+    plt.title("Trainings-reward curves — Taxi-v4")
     # Stippellijn als referentie voor de benaderde optimale score (~8 punten).
     plt.axhline(8, ls="--", c="grey", alpha=0.5,
                 label="~optimaal (~8: 12 stappen + 20 aflevering)")

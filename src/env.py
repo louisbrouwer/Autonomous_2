@@ -1,4 +1,4 @@
-"""Dunne wrapper om Gymnasium's Taxi-v3 omgeving.
+"""Dunne wrapper om Gymnasium's Taxi-v4 omgeving.
 
 State space (500 discrete states):
     state = ((taxi_row * 5) + taxi_col) * 5 * 4
@@ -29,7 +29,7 @@ LOCATIONS = ((0, 0), (0, 4), (4, 0), (4, 3))   # vaste grid posities voor R, G, 
 
 
 class TaxiEnv:
-    """Wrapper om de Gymnasium Taxi-v3 omgeving met iets eenvoudigere interface."""
+    """Wrapper om de Gymnasium Taxi-v4 omgeving met iets eenvoudigere interface."""
 
     def __init__(self, render_mode: str | None = None) -> None:
         """Maak de omgeving aan.
@@ -37,7 +37,7 @@ class TaxiEnv:
         Args:
             render_mode: "human" om de omgeving visueel te tonen, None voor geen weergave.
         """
-        self.env = gym.make("Taxi-v3", render_mode=render_mode)
+        self.env = gym.make("Taxi-v4", render_mode=render_mode)
         self.action_space = self.env.action_space
         self.observation_space = self.env.observation_space
 

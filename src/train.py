@@ -1,4 +1,4 @@
-"""Train een Q-learning of SARSA agent op Taxi-v3 en sla statistieken op per episode."""
+"""Train een Q-learning of SARSA agent op Taxi-v4 en sla statistieken op per episode."""
 import argparse
 import csv
 import random
